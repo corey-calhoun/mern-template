@@ -1,47 +1,46 @@
-// Express server for the application
+require('dotenv').config() // Load environment variables from .env file
 const express = require('express');
-const { graphqlHTTP } = require('express-graphql');
-const { buildSchema } = require('graphql');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const morgan = require('morgan');
+const { ApolloServer, gql } = require('apollo-server-express');
+// const User = require('./models/user');
+const schema = require('./graphql/schema');
 
-// Construct a schema, using GraphQL schema language
-const schema = buildSchema(`
+// Connect to MongoDB
+const db = mongoose.connect(process.env.MONGODB_URI);
+
+// Initialize Express
+const app = express();
+
+// middleware
+app.use(cors());
+app.use(morgan('dev'));
+
+// GraphQL schema 'Query'
+const typeDefs = gql`
     type Query {
-        name: String,
-        email: String,
-        description: String,
+        hello: String
     }
-`);
+`;
 
-// The root value is used to say what will be returned for each schema element
-const root = {
-    name: () => {
-        return 'Corey';
-    },
-    email: () => {
-        return 'test@email.com';
-    },
-    description: () => {
-        return 'This is a test description';
+// GraphQL resolvers
+const resolvers = {
+    Query: {
+        hello: () => 'Hello world!'
     }
 };
 
-// Set app to express server and port
-const app = express();
-const PORT = process.env.PORT || 4000;
+// Create async function to initialize Apollo server with GraphQL schema and resolvers, attach to Express and DB connection
+const init = async () => {
+    const server = new ApolloServer({ typeDefs, resolvers });
+    await server.start();
+    server.applyMiddleware({ app });
+    await db;
+    app.listen({ port: process.env.PORT || 4000 }, () => {
+        console.log(`🚀 Server ready at http://localhost:${process.env.PORT || 4000}${server.graphqlPath}`);
+    });
+}
 
-// Routes for the application
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
 
-// API endpoint
-app.use('/api', graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true,
-}));
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
-})
