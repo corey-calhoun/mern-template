@@ -1,25 +1,20 @@
-const MongoClient = require('mongodb').MongoClient;
+// This will hold the database connection information
+import mongoose from 'mongoose';
 
-let MongoDB;
+const db = process.env.MONGODB_URI;
 
-// Connect to the database before starting the application server.
-// credentials should be stored in a .env file
-const dbSetup = callback => {
-    const uri = 'mongodb+srv://corey_calhoun:DeaconZane0907@cluster0.yeq9y.mongodb.net/reactjs-dotnetcore?retryWrites=true&w=majority';
+const connection = mongoose.createConnection(db, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+});
 
-    MongoClient.connect(uri, { useNewUrlParser: true }, (err, client) => {
-        if (err) {
-            console.log(err);
-            return;
-        }
+const schema = new mongoose.Schema({
+    name: 'String',
+    email: 'String',
+    description: 'String'
+});
 
-        MongoDB = client.db('reactjs-dotnetcore');
-        callback('Connected to MongoDB database');
-    });
-};
+const User = connection.model('User', schema);
 
-const getDB = () => {
-    return MongoDB;
-};
-
-module.exports = {dbSetup, getDB};
+export { User };

@@ -1,3 +1,5 @@
+const { GraphQLObjectType, GraphQLID, GraphQLString, } = require('graphql');
+
 //create our own graphql object data type that has its own _id and content field
 const userType = new GraphQLObjectType({
     name: 'User',
@@ -6,3 +8,5 @@ const userType = new GraphQLObjectType({
         content: { type: GraphQLString },
     }
 });
+
+module.exports = {userType};
